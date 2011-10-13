@@ -19,8 +19,8 @@ public class MinusSync {
      */
     public static void main(String[] args){
       
-        if (args.length != 2) {
-            System.out.println("using:\n MinusSync client_id client_key");
+        if (args.length != 4) {
+            System.out.println("using:\n MinusSync client_id client_key login password");
             return;
         }
         
@@ -31,11 +31,12 @@ public class MinusSync {
             
         String id = args[0];
         String secret = args[1];      
-       
+        String login = args[2];
+        String password = args[3];
+        
         MinusApi api = new MinusApi(id, secret);
                 
-        AuthResponse auth = 
-                    api.authentification("namsbuko", "kdn868995", "modify_all");
+        AuthResponse auth = api.authentification(login, password, "modify_all");
         if (auth == null) return; 
 
         System.out.println(auth.toString());  
