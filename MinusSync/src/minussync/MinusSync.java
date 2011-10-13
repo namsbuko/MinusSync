@@ -6,6 +6,7 @@ package minussync;
 
 import minusapi.*;
 import java.net.MalformedURLException;
+import java.util.Collection;
 
 /**
  *
@@ -51,5 +52,21 @@ public class MinusSync {
         user = api.getUser(auth.getAccessToken(), user.getSlug());    
         if (user == null) return;
         System.out.println(user.toString());
+        
+        Collection<MinusFolder> folders = 
+                          api.getFolders(auth.getAccessToken(), user.getSlug());
+        for(MinusFolder f: folders){
+            System.out.print("Folder: ");
+            System.out.println(f.toString());
+            Collection<MinusFile> files = 
+                                 api.getFiles(auth.getAccessToken(), f.getId());
+            for(MinusFile file: files){
+                System.out.print("File: ");
+                System.out.println(file.toString());
+                MinusFile t = api.getFile(auth.getAccessToken(), file.getId());
+                System.out.print("File: ");
+                System.out.println(t.toString());
+            }
+        }
     }
 }

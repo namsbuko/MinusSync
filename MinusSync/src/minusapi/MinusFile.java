@@ -20,18 +20,41 @@ public class MinusFile {
     private int width;
     private int height;
     
-    private int size;
-    private String mimeType;
+    private int filesize;
+    private String mimetype;
     
-    private String folderLink;
+    private String folder;
 
     private String url;
 
-    private Date uploaded;
+    private String uploaded;
 
-    private String originalLink;
-    private String tumbnailLink;
-
+    private String url_rawfile;
+   
+    private String url_thumbnail;
+    private String url_thumbnail_medium;
+    
+    private int uploaded_ago;
+    
+    @Override
+    public String toString()
+    {
+        return "Id: " + id + "; " +
+               "Name: " + name + "; " +
+               "Title: " + title + "; " +
+               "Caption: " + caption + "; " +
+               "Width: " + width + "; " +
+               "Height: " + height + "; " +
+               "File's size: " + filesize + "; " +
+               "Mime type: " + mimetype + "; " +
+               "Folder: " + folder + "; " + 
+               "Url: " + url + "; " +
+               "Uploaded: " + uploaded + "; " +
+               "Uploaded ago: " + uploaded_ago + "; " +
+               "Url of rawfile: " + url_rawfile + "; " + 
+               "Url of thumbnail medium: " + url_thumbnail_medium + "; " +
+               "Url of thumbnail: " + url_thumbnail + ".";
+    }
     /**
      * @return the id
      */
@@ -120,42 +143,42 @@ public class MinusFile {
      * @return the size
      */
     public int getSize() {
-        return size;
+        return filesize;
     }
 
     /**
      * @param size the size to set
      */
     public void setSize(int size) {
-        this.size = size;
+        this.filesize = size;
     }
 
     /**
      * @return the mimeType
      */
     public String getMimeType() {
-        return mimeType;
+        return mimetype;
     }
 
     /**
      * @param mimeType the mimeType to set
      */
     public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
+        this.mimetype = mimeType;
     }
 
     /**
      * @return the folderLink
      */
     public String getFolderLink() {
-        return folderLink;
+        return folder;
     }
 
     /**
      * @param folderLink the folderLink to set
      */
     public void setFolderLink(String folderLink) {
-        this.folderLink = folderLink;
+        this.folder = folderLink;
     }
 
     /**
@@ -175,14 +198,14 @@ public class MinusFile {
     /**
      * @return the uploaded
      */
-    public Date getUploaded() {
+    public String getUploaded() {
         return uploaded;
     }
 
     /**
      * @param uploaded the uploaded to set
      */
-    public void setUploaded(Date uploaded) {
+    public void setUploaded(String uploaded) {
         this.uploaded = uploaded;
     }
 
@@ -190,27 +213,55 @@ public class MinusFile {
      * @return the originalLink
      */
     public String getOriginalLink() {
-        return originalLink;
+        return url_rawfile;
     }
 
     /**
      * @param originalLink the originalLink to set
      */
     public void setOriginalLink(String originalLink) {
-        this.originalLink = originalLink;
+        this.url_rawfile = originalLink;
     }
 
     /**
      * @return the link
      */
     public String getTumbnailLink() {
-        return tumbnailLink;
+        return url_thumbnail;
     }
 
     /**
      * @param link the link to set
      */
     public void setTumbnailLink(String link) {
-        this.tumbnailLink = link;
+        this.url_thumbnail = link;
+    }
+
+    /**
+     * @return the url_thumbnail_medium
+     */
+    public String getUrlThumbnailMedium() {
+        return url_thumbnail_medium;
+    }
+
+    /**
+     * @param url_thumbnail_medium the url_thumbnail_medium to set
+     */
+    public void setUrlThumbnailMedium(String urlThumbnailMedium) {
+        this.url_thumbnail_medium = urlThumbnailMedium;
+    }
+
+    /**
+     * @return the uploaded_ago
+     */
+    public int getUploadedAgo() {
+        return uploaded_ago;
+    }
+
+    /**
+     * @param uploaded_ago the uploaded_ago to set
+     */
+    public void setUploadedAgo(int uploadedAgo) {
+        this.uploaded_ago = uploadedAgo;
     }
 }
