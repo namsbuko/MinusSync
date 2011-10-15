@@ -222,7 +222,7 @@ public class MinusApi {
     
     public boolean downloadFile(String accToken, MinusFile file, OutputStream out)
     {
-        
+        //fadsfad
         // using direct link to file from MinusFile objects: file.getOriginalLink();        
         throw new UnsupportedOperationException("Not yet implemented");
     }
