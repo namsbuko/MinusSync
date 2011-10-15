@@ -4,6 +4,10 @@
  */
 package minussync;
 
+import java.io.*;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import minusapi.*;
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -67,6 +71,12 @@ public class MinusSync {
                 MinusFile t = api.getFile(auth.getAccessToken(), file.getId());
                 System.out.print("File: ");
                 System.out.println(t.toString());
+                try {
+                    FileOutputStream fw = new FileOutputStream(new File(t.getName()));
+                    api.downloadFile(t, fw);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }

@@ -10,8 +10,11 @@ import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Map;
 import com.google.gson.*;
+import java.net.MalformedURLException;
 import java.nio.CharBuffer;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -220,12 +223,47 @@ public class MinusApi {
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
-    public boolean downloadFile(String accToken, MinusFile file, OutputStream out)
+    
+    /*
+     * Download file from Minus to your PC
+     * params: 
+     *          MinusFile file - direct file from Minus
+     *          OutputStream out - stream to file on PC
+     *          
+     * returns:
+     *          true - if file hab been download
+     *          false - error
+     */
+    public boolean downloadFile(MinusFile file, OutputStream out)
     {
-        //это код с ноута
-        // using direct link to file from MinusFile objects: file.getOriginalLink();        
-        throw new UnsupportedOperationException("Not yet implemented");
+        try {
+           
+            URL url = new URL (file.getOriginalLink());
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+
+            //если нужно будет указывать имя файла...
+            //FileOutputStream fw = new FileOutputStream(new File("1.rar"));
+
+            byte[] b = new byte[1024];
+            int count = 0;
+
+            while ((count=bis.read(b)) != -1) 
+            out.write(b,0,count);
+
+            out.close();
+        
+        } catch (MalformedURLException ex) {
+                             return false;
+        } catch (IOException ex) {
+                             return false;       
+        }
+        return true;
     }
+        
+    
     
     public MinusFile getFile(String accToken, String fileId)
     {
