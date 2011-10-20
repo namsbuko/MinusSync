@@ -4,6 +4,7 @@
  */
 package minusapi;
 
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -28,7 +29,7 @@ public class MinusFolder {
     private String last_updated;
     private int last_updated_ago;
     
-    private String item_ordering;
+    private String[] item_ordering;
     
     private String url;
     
@@ -46,7 +47,7 @@ public class MinusFolder {
                "Date last updated: " + date_last_updated + "; " + 
                "Last updated: " + last_updated + "; " +
                "Last updated ago: " + last_updated_ago + "; " + 
-               "Item ordering: " + item_ordering + "; " +
+        //       "Item ordering: " + item_ordering + "; " +
                "Url: " + url + ".";
     }
 
@@ -221,14 +222,14 @@ public class MinusFolder {
     /**
      * @return the item_ordering
      */
-    public String getItemOrdering() {
+    public String[] getItemOrdering() {
         return item_ordering;
     }
 
     /**
      * @param item_ordering the item_ordering to set
      */
-    public void setItemOrdering(String itemOrdering) {
+    public void setItemOrdering(String[] itemOrdering) {
         this.item_ordering = itemOrdering;
     }
 }

@@ -101,8 +101,7 @@ public class MinusApi {
     }
                 
     static private <T> T request(String method, Map<String, String> property, 
-                                 String url, String body, Class<T> type) {
-        
+                                 String url, String body, Class<T> type) {        
         T res = null;
         try {
             HttpURLConnection con = 
@@ -122,7 +121,7 @@ public class MinusApi {
 
             InputStreamReader rd = new InputStreamReader(con.getInputStream());
             res = new Gson().fromJson(rd, type);
-         
+
             con.disconnect();
         } catch (IOException e) {
             // TODO add report error            
@@ -214,14 +213,46 @@ public class MinusApi {
         return getFolders(_auth.getAccessToken(), _activeUser.getSlug());
     }
     
-    static public boolean addFolder(String accToken, String name, 
-                                    boolean isPublic) {
-        // see http://miners.github.com/MinusAPIv2/v2/list_user_folders.html
-        throw new UnsupportedOperationException("Not yet implemented");
+    static public boolean addFolder(String accToken, String slug, String name, 
+                                    Boolean isPublic) {
+        // TODO don't work
+        boolean res = false;
+        try {
+            URL url = new URL(_urls.get(Url.User) + slug 
+                              + "/folders?bearer_token=" + accToken);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", 
+                            "application/x-www-form-urlencoded; charset=UTF-8");
+            con.setRequestProperty("Accept-Charse", "UTF-8,*;q=0.5");
+
+            String body = "name=" + name + "&is_public=true";// + isPublic.toString();
+            
+            writeBody(con.getOutputStream(), body);
+            
+            InputStreamReader rd = new InputStreamReader(con.getInputStream());
+  //          res = new Gson().fromJson(rd, type);
+            CharBuffer buf = CharBuffer.allocate(con.getContentLength());
+            rd.read(buf);
+            System.out.println(buf.array());
+            MinusFolder folder = new Gson().fromJson(new String(buf.array()), 
+                                                     MinusFolder.class);
+            
+            con.disconnect();
+        } catch (IOException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        } catch (JsonSyntaxException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        }
+        return res;
     }
     
-    public boolean  addFolder(String name, boolean isPublic) {
-        return addFolder(_auth.getAccessToken(), name, isPublic);
+    public boolean  addFolder(String name, Boolean isPublic) {
+        return addFolder(_auth.getAccessToken(), _activeUser.getSlug(), 
+                         name, isPublic);
     }
     
     static public MinusFolder getFolder(String accToken, String folderId) {
@@ -236,8 +267,25 @@ public class MinusApi {
     
     static public boolean deleteFolder(String accToken, String folderId)
     {
-        // see http://miners.github.com/MinusAPIv2/v2/get_folder.html DELETE
-        throw new UnsupportedOperationException("Not yet implemented");
+        // TODO don't work
+        boolean res = false;
+        try {
+            URL url = new URL(_urls.get(Url.Folder) + folderId 
+                              + "?bearer_token=" + accToken);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setRequestMethod("DELETE");
+            con.connect();
+       //     res = con.getResponseCode() == 200;
+       //   возвращает код -1
+            con.disconnect();
+        } catch (IOException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        } catch (JsonSyntaxException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        }
+        return res;
     }
     
     public boolean deleteFolder(String folderId) {
@@ -256,10 +304,62 @@ public class MinusApi {
         return getFiles(_auth.getAccessToken(), folderId);
     }
     
-    static public boolean uploadFile(String accToken, String caption, 
-                                 String filename, InputStream in) {
-        // see http://miners.github.com/MinusAPIv2/v2/list_folder_files.html POST
-        throw new UnsupportedOperationException("Not yet implemented");
+    static public boolean uploadFile(String accToken, String caption, String filename, 
+                                     InputStream in)
+    {
+        // TODO don't work
+        
+        boolean res = false;
+        try {
+            URL url = new URL(_urls.get(Url.Folder)// + fileId 
+                              + "/files?bearer_token=" + accToken);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", 
+                                   "multipart/form-data; boundary=---example");
+            con.setRequestProperty("Accept-Charse", "UTF-8,*;q=0.5");
+
+            String body = "---example\r\n" +
+                          "Content-Disposition: form-data; name=\"file\"; "
+                          + "filename=\"my.txt\"\r\nContent-Type: text/plain\r\n\r\n";
+            
+            OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
+            wr.write(body);
+            int c;
+            while ((c = in.read()) != -1) {
+                wr.write(c);
+            }
+            wr.write("\r\n");
+            
+            body = "---example\r\n" +
+                   "Content-Disposition: form-data; name=\"filename\"\r\n\r\n" +
+                   "\"my.txt\"\r\n" +
+                   "---example\r\n" + 
+                   "Content-Disposition: form-data; name=\"caption\"\r\n\r\n" +
+                   "\"mycaption\"\r\n" +
+                   "---example";
+            
+//            wr.flush();       
+            wr.close();
+            
+            InputStreamReader rd = new InputStreamReader(con.getInputStream());
+  //          res = new Gson().fromJson(rd, type);
+            CharBuffer buf = CharBuffer.allocate(con.getContentLength());
+            rd.read(buf);
+            System.out.println(buf.array());
+            MinusFolder folder = new Gson().fromJson(new String(buf.array()), 
+                                                     MinusFolder.class);
+            
+            con.disconnect();
+        } catch (IOException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        } catch (JsonSyntaxException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        }
+        return res;
     }
     
     public boolean uploadFile(String caption, String filename, InputStream in) {
@@ -311,9 +411,26 @@ public class MinusApi {
         return getFile(_auth.getAccessToken(), fileId);
     }
     
-    static public boolean deleteFile(String accToken, String fileId) {
-        // see http://miners.github.com/MinusAPIv2/v2/get_file.html DELETE
-        throw new UnsupportedOperationException("Not yet implemented");
+    static public boolean deleteFile(String accToken, String fileId)
+    {
+        boolean res = false;
+        try {
+            URL url = new URL(_urls.get(Url.File) + fileId 
+                              + "?bearer_token=" + accToken);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+            con.setRequestMethod("DELETE");
+            con.connect();
+       //     res = con.getResponseCode() == 200;
+       //   возвращает код -1
+            con.disconnect();
+        } catch (IOException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        } catch (JsonSyntaxException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        }
+        return res;
     }
     
     public boolean deleteFile(String fileId) {
