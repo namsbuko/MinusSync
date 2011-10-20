@@ -56,9 +56,11 @@ class FileList extends MinusList<MinusFile>{
 public class MinusApi {
   
     private final String _clientId;
-    private final String _clientSecret;
+    private final String _clientKey;
+    private final MinusUser _activeUser;
+    private MinusAuth _auth;
 
-    private final Map<Url, String> _urls = new HashMap<MinusApi.Url, String>(){{
+    static private final Map<Url, String> _urls = new HashMap<MinusApi.Url, String>(){{
             put(Url.ActiveUser, 
                 "https://minus.com/api/v2/activeuser?bearer_token=");
             put(Url.Authentification, "http://minus.com/oauth/token");
@@ -75,38 +77,30 @@ public class MinusApi {
         File
     }
     
-    private String getRequestAuthString(String uname, String password, 
-                                        String scope)
-    {
-        return "grant_type=password&client_id=" + _clientId  + 
-               "&client_secret=" + _clientSecret + 
+    static private String getAuthRequest(String clId, String clKey,
+                                  String uname, String password, String scope) {
+        return "grant_type=password&client_id=" + clId  + 
+               "&client_secret=" + clKey + 
                "&scope=" + scope + "&username=" + uname + 
                "&password=" + password;
     }
     
-    private String getRequestRefreshString(String refreshToken, String scope)
-    {
-        return "grant_type=refresh_token&client_id=" + _clientId  + 
-               "&client_secret=" + _clientSecret + 
+    static private String getRefreshRequest(String clId, String clKey, 
+                                            String refreshToken, String scope) {
+        return "grant_type=refresh_token&client_id=" + clId  + 
+               "&client_secret=" + clKey + 
                "&scope=" + scope + "&refresh_token=" + refreshToken;
     }
     
-    private void writeBody(OutputStream out, String str) 
+    static private void writeBody(OutputStream out, String str) 
             throws IOException {
         OutputStreamWriter wr = new OutputStreamWriter(out);
         wr.write(str);
         wr.close();
     }
-       
-    public MinusApi(String clientId, String clientSecret)
-    {
-        _clientId = clientId;
-        _clientSecret = clientSecret;
-    }
-    
-    private AuthResponse authentification(String body)
-    {
-        AuthResponse res = null;
+           
+    static private MinusAuth authentification(String body) {
+        MinusAuth res = null;
         try {
             URL url = new URL(_urls.get(Url.Authentification));
             
@@ -120,7 +114,7 @@ public class MinusApi {
            
             Gson json = new Gson();
             res = json.fromJson(new InputStreamReader(con.getInputStream()), 
-                                AuthResponse.class);
+                                MinusAuth.class);
             con.disconnect();            
         } catch (IOException e) {
             // TODO add report error
@@ -133,17 +127,48 @@ public class MinusApi {
         return res;
     }
      
-    public AuthResponse authentification(String uname, String password, 
-                                         String scope){
-        return authentification(getRequestAuthString(uname, password, scope));
+    static public MinusAuth authentification
+                               (String clientId, String clientKey, String uname, 
+                                String password, String scope){
+        return authentification(
+                   getAuthRequest(clientId, clientKey, uname, password, scope));
     }
  
-    public AuthResponse refresh(String scope, String refreshToken)
-    {
-        return authentification(getRequestRefreshString(refreshToken, scope));
+    public MinusAuth getAuthentification() {
+        return _auth;
     }
     
-    private <T extends Object> T minusApiRequest(String urlStr, Class<T> type)
+    private MinusApi(String clientId, String clientKey, MinusAuth auth, 
+                     MinusUser activeUser) {
+        _clientId = clientId;
+        _clientKey = clientKey;
+        _auth = auth;
+        _activeUser = activeUser;
+    }
+    
+    static public MinusApi createMinusApi(String clientId, String clientKey, 
+                                  String uname, String password, String scope) {
+        MinusAuth auth = authentification(clientId, clientKey, uname, 
+                                             password, scope);
+        MinusUser actUser = getActiveUser(auth.getAccessToken());
+        return (auth == null || actUser == null) 
+                ? null : new MinusApi(clientId, clientKey, auth, actUser);
+    }
+    
+    static public MinusAuth refresh(String clientId, String clientKey, 
+                                       String scope, String refreshToken) {
+        return authentification(
+                   getRefreshRequest(clientId, clientKey, refreshToken, scope));
+    }
+    
+    public boolean refresh() {
+        _auth = refresh(_clientId, _clientKey, _auth.getScope(), 
+                        _auth.getRefreshToken());
+        
+        return _auth != null;
+    }
+    
+    static private <T extends Object> T get(String urlStr, Class<T> type)
     {
         T res = null;
         try {
@@ -152,11 +177,7 @@ public class MinusApi {
                             (HttpURLConnection)new URL(urlStr).openConnection();
               
             InputStreamReader rd = new InputStreamReader(con.getInputStream());
-  //          res = new Gson().fromJson(rd, type);
-            CharBuffer buf = CharBuffer.allocate(con.getContentLength());
-            rd.read(buf);
-            System.out.println(buf.array());
-            res = new Gson().fromJson(new String(buf.array()), type);
+            res = new Gson().fromJson(rd, type);
             
             con.disconnect();
         } catch (IOException e) {
@@ -169,60 +190,88 @@ public class MinusApi {
         return res;
     }
     
-    public MinusUser getActiveUser(String accToken)
+    static public MinusUser getActiveUser(String accToken)
     {
         String url = _urls.get(Url.ActiveUser) + accToken;
-        return minusApiRequest(url, MinusUser.class);
+        return get(url, MinusUser.class);
     }
     
-    public MinusUser getUser(String accToken, String slug)
-    {
-        String url = _urls.get(Url.User) + slug + "?bearer_token=" + accToken;
-        return minusApiRequest(url, MinusUser.class);
+    public MinusUser getActiveUser() {
+        return _activeUser;
     }
-
-    public Collection<MinusFolder> getFolders(String accToken, String slug)
-    {
+    
+    static public MinusUser getUser(String accToken, String slug) {
+        String url = _urls.get(Url.User) + slug + "?bearer_token=" + accToken;
+        return get(url, MinusUser.class);
+    }
+    
+    public MinusUser getUser() {
+        return getUser(_auth.getAccessToken(), _activeUser.getSlug());
+    }    
+    
+    static public Collection<MinusFolder> getFolders(String accToken, 
+                                                     String slug) {
         String url = _urls.get(Url.User) + slug 
                      + "/folders?bearer_token=" + accToken;
-        FolderList lst = minusApiRequest(url, FolderList.class);
+        FolderList lst = get(url, FolderList.class);
         return lst.getResults();
     }
     
-    public boolean addFolder(String accToken, String name, boolean isPublic)
-    {
+    public Collection<MinusFolder> getFolders() {
+        return getFolders(_auth.getAccessToken(), _activeUser.getSlug());
+    }
+    
+    static public boolean addFolder(String accToken, String name, 
+                                    boolean isPublic) {
         // see http://miners.github.com/MinusAPIv2/v2/list_user_folders.html
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
-    public MinusFolder getFolder(String accToken, String folderId)
-    {
-        String url = _urls.get(Url.Folder) + folderId 
-                     + "?bearer_token=" + accToken;
-        return minusApiRequest(url, MinusFolder.class);
+    public boolean  addFolder(String name, boolean isPublic) {
+        return addFolder(_auth.getAccessToken(), name, isPublic);
     }
     
-    public boolean deleteFolder(String accToken, String folderId)
+    static public MinusFolder getFolder(String accToken, String folderId) {
+        String url = _urls.get(Url.Folder) + folderId 
+                     + "?bearer_token=" + accToken;
+        return get(url, MinusFolder.class);
+    }
+    
+    public MinusFolder getFolder(String folderId) {
+        return getFolder(_auth.getAccessToken(), folderId);
+    }
+    
+    static public boolean deleteFolder(String accToken, String folderId)
     {
         // see http://miners.github.com/MinusAPIv2/v2/get_folder.html DELETE
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
-    public Collection<MinusFile> getFiles(String accToken, String folderId)
-    {
+    public boolean deleteFolder(String folderId) {
+        return deleteFolder(_auth.getAccessToken(), folderId);
+    }
+    
+    static public Collection<MinusFile> getFiles(String accToken, 
+                                                 String folderId) {
         String url = _urls.get(Url.Folder) + folderId 
                      + "/files?bearer_token=" + accToken;
-        FileList lst = minusApiRequest(url, FileList.class);
+        FileList lst = get(url, FileList.class);
         return lst.getResults();
     }
     
-    public boolean uploadFile(String accToken, String caption, String filename, 
-                              String file, InputStream in)
-    {
+    public Collection<MinusFile> getFiles(String folderId) {
+        return getFiles(_auth.getAccessToken(), folderId);
+    }
+    
+    static public boolean uploadFile(String accToken, String caption, 
+                                 String filename, InputStream in) {
         // see http://miners.github.com/MinusAPIv2/v2/list_folder_files.html POST
         throw new UnsupportedOperationException("Not yet implemented");
     }
     
+    public boolean uploadFile(String caption, String filename, InputStream in) {
+        return uploadFile(_auth.getAccessToken(), caption, filename, in);
+    }
     
     /*
      * Download file from Minus to your PC
@@ -231,21 +280,18 @@ public class MinusApi {
      *          OutputStream out - stream to file on PC
      *          
      * returns:
-     *          true - if file hab been download
+     *          true - if file had been download
      *          false - error
      */
-    public boolean downloadFile(MinusFile file, OutputStream out)
-    {
+    static public boolean downloadFile(MinusFile file, OutputStream out) {
         try {
            
             URL url = new URL (file.getOriginalLink());
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
-
-            //если нужно будет указывать имя файла...
-            //FileOutputStream fw = new FileOutputStream(new File("1.rar"));
+            BufferedInputStream bis = 
+                                new BufferedInputStream(conn.getInputStream());
 
             byte[] b = new byte[1024];
             int count = 0;
@@ -256,24 +302,28 @@ public class MinusApi {
             out.close();
         
         } catch (MalformedURLException ex) {
-                             return false;
+            return false;
         } catch (IOException ex) {
-                             return false;       
+            return false;       
         }
         return true;
-    }
+    }    
         
-    
-    
-    public MinusFile getFile(String accToken, String fileId)
-    {
+    static public MinusFile getFile(String accToken, String fileId) {
         String url = _urls.get(Url.File) + fileId + "?bearer_token=" + accToken;
-        return minusApiRequest(url, MinusFile.class);
+        return get(url, MinusFile.class);
     }
     
-    public boolean deleteFile(int fileId)
-    {
+    public MinusFile getFile(String fileId) {
+        return getFile(_auth.getAccessToken(), fileId);
+    }
+    
+    static public boolean deleteFile(String accToken, String fileId) {
         // see http://miners.github.com/MinusAPIv2/v2/get_file.html DELETE
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public boolean deleteFile(String fileId) {
+        return deleteFile(_auth.getAccessToken(), fileId);
     }
 }

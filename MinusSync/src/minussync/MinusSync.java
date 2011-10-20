@@ -38,42 +38,38 @@ public class MinusSync {
         String login = args[2];
         String password = args[3];
         
-        MinusApi api = new MinusApi(id, secret);
-                
-        AuthResponse auth = api.authentification(login, password, "modify_all");
-        if (auth == null) return; 
-
-        System.out.println(auth.toString());  
+        MinusApi api = MinusApi.createMinusApi(id, secret, login, password, 
+                                               "modify_all");
+        if (api == null) return; 
+        System.out.println(api.getAuthentification().toString());  
         
-        auth = api.refresh("modify_all", auth.getRefreshToken());
-        if (auth == null) return; 
-
-        System.out.println(auth.toString());  
+        if (!api.refresh()) return; 
+        System.out.println(api.getAuthentification().toString());  
         
-        MinusUser user = api.getActiveUser(auth.getAccessToken());    
+        MinusUser user = api.getActiveUser();    
         if (user == null) return;
         System.out.println(user.toString());
         
-        user = api.getUser(auth.getAccessToken(), user.getSlug());    
+        user = api.getUser();   
         if (user == null) return;
         System.out.println(user.toString());
         
-        Collection<MinusFolder> folders = 
-                          api.getFolders(auth.getAccessToken(), user.getSlug());
-        for(MinusFolder f: folders){
+        Collection<MinusFolder> folders = api.getFolders();
+        for(MinusFolder folder: folders){
             System.out.print("Folder: ");
-            System.out.println(f.toString());
-            Collection<MinusFile> files = 
-                                 api.getFiles(auth.getAccessToken(), f.getId());
+            System.out.println(folder.toString());
+            System.out.print("Folder: ");
+            System.out.println(api.getFolder(folder.getId()).toString());
+            Collection<MinusFile> files = api.getFiles(folder.getId());
             for(MinusFile file: files){
                 System.out.print("File: ");
                 System.out.println(file.toString());
-                MinusFile t = api.getFile(auth.getAccessToken(), file.getId());
                 System.out.print("File: ");
-                System.out.println(t.toString());
+                System.out.println(api.getFile(file.getId()).toString());
                 try {
-                    FileOutputStream fw = new FileOutputStream(new File(t.getName()));
-                    api.downloadFile(t, fw);
+                    FileOutputStream fw = 
+                                 new FileOutputStream(new File(file.getName()));
+                    api.downloadFile(file, fw);
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
                 }
