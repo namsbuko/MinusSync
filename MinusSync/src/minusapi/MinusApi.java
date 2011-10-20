@@ -99,12 +99,7 @@ public class MinusApi {
         wr.write(str);
         wr.close();
     }
-           
-//    static private <T extends Object> T get(String urlStr, Class<T> type)
-//    {
- //       return request("GET", null, urlStr, null, type);
- //   }
-     
+                
     static private <T> T request(String method, Map<String, String> property, 
                                  String url, String body, Class<T> type) {
         
