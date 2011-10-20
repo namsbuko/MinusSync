@@ -66,13 +66,13 @@ public class MinusSync {
                 System.out.println(file.toString());
                 System.out.print("File: ");
                 System.out.println(api.getFile(file.getId()).toString());
-                try {
-                    FileOutputStream fw = 
-                                 new FileOutputStream(new File(file.getName()));
-                    api.downloadFile(file, fw);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
-                }
+//                try {
+//                    FileOutputStream fw = 
+//                                 new FileOutputStream(new File(file.getName()));
+//                    api.downloadFile(file, fw);
+//                } catch (FileNotFoundException ex) {
+//                    Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             }
         }
     }

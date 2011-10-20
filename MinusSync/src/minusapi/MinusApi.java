@@ -13,6 +13,7 @@ import com.google.gson.*;
 import java.net.MalformedURLException;
 import java.nio.CharBuffer;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,32 +100,51 @@ public class MinusApi {
         wr.close();
     }
            
-    static private MinusAuth authentification(String body) {
-        MinusAuth res = null;
-        try {
-            URL url = new URL(_urls.get(Url.Authentification));
-            
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();                              
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", 
-                            "application/x-www-form-urlencoded; charset=UTF-8");
-       
-            writeBody(con.getOutputStream(), body);
-           
-            Gson json = new Gson();
-            res = json.fromJson(new InputStreamReader(con.getInputStream()), 
-                                MinusAuth.class);
-            con.disconnect();            
-        } catch (IOException e) {
-            // TODO add report error
-             e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error
-             e.printStackTrace();
-        }
+//    static private <T extends Object> T get(String urlStr, Class<T> type)
+//    {
+ //       return request("GET", null, urlStr, null, type);
+ //   }
+     
+    static private <T> T request(String method, Map<String, String> property, 
+                                 String url, String body, Class<T> type) {
         
-        return res;
+        T res = null;
+        try {
+            HttpURLConnection con = 
+                            (HttpURLConnection)new URL(url).openConnection();
+        
+            con.setRequestMethod(method);
+            
+            if (property != null)
+                for (Entry<String, String> pair: property.entrySet()) {
+                    con.setRequestProperty(pair.getKey(), pair.getValue());
+                }
+           
+            if (body != null) {
+                con.setDoOutput(true);
+                writeBody(con.getOutputStream(), body);
+            }
+
+            InputStreamReader rd = new InputStreamReader(con.getInputStream());
+            res = new Gson().fromJson(rd, type);
+         
+            con.disconnect();
+        } catch (IOException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        } catch (JsonSyntaxException e) {
+            // TODO add report error            
+            e.printStackTrace();
+        }
+        return res;        
+    }
+            
+    static private MinusAuth authentification(String body) {
+        Map<String, String> pr = new HashMap<String, String>();
+        pr.put("Content-Type", 
+               "application/x-www-form-urlencoded; charset=UTF-8");
+        return request("POST", pr, _urls.get(Url.Authentification), 
+                       body, MinusAuth.class);
     }
      
     static public MinusAuth authentification
@@ -168,32 +188,10 @@ public class MinusApi {
         return _auth != null;
     }
     
-    static private <T extends Object> T get(String urlStr, Class<T> type)
-    {
-        T res = null;
-        try {
-            // on default request - GET
-            HttpURLConnection con = 
-                            (HttpURLConnection)new URL(urlStr).openConnection();
-              
-            InputStreamReader rd = new InputStreamReader(con.getInputStream());
-            res = new Gson().fromJson(rd, type);
-            
-            con.disconnect();
-        } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        }
-        return res;
-    }
-    
     static public MinusUser getActiveUser(String accToken)
     {
         String url = _urls.get(Url.ActiveUser) + accToken;
-        return get(url, MinusUser.class);
+        return request("GET", null, url, null, MinusUser.class);
     }
     
     public MinusUser getActiveUser() {
@@ -202,7 +200,7 @@ public class MinusApi {
     
     static public MinusUser getUser(String accToken, String slug) {
         String url = _urls.get(Url.User) + slug + "?bearer_token=" + accToken;
-        return get(url, MinusUser.class);
+        return request("GET", null, url, null, MinusUser.class);
     }
     
     public MinusUser getUser() {
@@ -213,8 +211,8 @@ public class MinusApi {
                                                      String slug) {
         String url = _urls.get(Url.User) + slug 
                      + "/folders?bearer_token=" + accToken;
-        FolderList lst = get(url, FolderList.class);
-        return lst.getResults();
+        FolderList lst = request("GET", null, url, null, FolderList.class);
+        return lst == null ? null : lst.getResults();
     }
     
     public Collection<MinusFolder> getFolders() {
@@ -234,7 +232,7 @@ public class MinusApi {
     static public MinusFolder getFolder(String accToken, String folderId) {
         String url = _urls.get(Url.Folder) + folderId 
                      + "?bearer_token=" + accToken;
-        return get(url, MinusFolder.class);
+        return request("GET", null, url, null, MinusFolder.class);
     }
     
     public MinusFolder getFolder(String folderId) {
@@ -255,8 +253,8 @@ public class MinusApi {
                                                  String folderId) {
         String url = _urls.get(Url.Folder) + folderId 
                      + "/files?bearer_token=" + accToken;
-        FileList lst = get(url, FileList.class);
-        return lst.getResults();
+        FileList lst = request("GET", null, url, null, FileList.class);
+        return lst == null ? null : lst.getResults();
     }
     
     public Collection<MinusFile> getFiles(String folderId) {
@@ -311,7 +309,7 @@ public class MinusApi {
         
     static public MinusFile getFile(String accToken, String fileId) {
         String url = _urls.get(Url.File) + fileId + "?bearer_token=" + accToken;
-        return get(url, MinusFile.class);
+        return request("GET", null, url, null, MinusFile.class);
     }
     
     public MinusFile getFile(String fileId) {
