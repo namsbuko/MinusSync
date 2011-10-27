@@ -199,7 +199,7 @@ public class MinusFolder {
     }
 
     /**
-     * @param last_updated the last_updated to set
+     * @param lastUpdated the last_updated to set
      */
     public void setLastUpdated(String lastUpdated) {
         this.last_updated = lastUpdated;
@@ -213,7 +213,7 @@ public class MinusFolder {
     }
 
     /**
-     * @param last_updated_ago the last_updated_ago to set
+     * @param lastUpdatedAgo the last_updated_ago to set
      */
     public void setLastUpdatedAgo(int lastUpdatedAgo) {
         this.last_updated_ago = lastUpdatedAgo;
@@ -227,7 +227,7 @@ public class MinusFolder {
     }
 
     /**
-     * @param item_ordering the item_ordering to set
+     * @param itemOrdering the item_ordering to set
      */
     public void setItemOrdering(String[] itemOrdering) {
         this.item_ordering = itemOrdering;

@@ -42,71 +42,49 @@ public class MinusSync {
         String password = args[3];
         
         MinusApi api = MinusApi.createMinusApi(id, secret, login, password, 
-                                               "modify_all");
+                                               "read_public+read_all+upload_new+modify_all+modify_user");
         if (api == null) return; 
         System.out.println(api.getAuthentification().toString());  
         
-        if (!api.refresh()) return; 
-        System.out.println(api.getAuthentification().toString());  
+//        if (!api.refresh()) return; 
+//        System.out.println(api.getAuthentification().toString());  
         
         MinusUser user = api.getActiveUser();    
         if (user == null) return;
         System.out.println(user.toString());
         
-        user = api.getUser();   
-        if (user == null) return;
-        System.out.println(user.toString());
-        
+//        user = api.getUser();   
+//        if (user == null) return;
+//        System.out.println(user.toString());
+      
+       FileInputStream in = new FileInputStream("testl.rar");
         Collection<MinusFolder> folders = api.getFolders();
         for(MinusFolder folder: folders){
             System.out.print("Folder: ");
             System.out.println(folder.toString());
-            System.out.print("Folder: ");
-            System.out.println(api.getFolder(folder.getId()).toString());
-            Collection<MinusFile> files = api.getFiles(folder.getId());
-            for(MinusFile file: files){
-                System.out.print("File: ");
-                System.out.println(file.toString());
-                System.out.print("File: ");
-                System.out.println(api.getFile(file.getId()).toString());
-//                try {
-//                    FileOutputStream fw = 
-//                                 new FileOutputStream(new File(file.getName()));
-//                    api.downloadFile(file, fw);
-//                } catch (FileNotFoundException ex) {
-//                    Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-            }
-        }
-//        user = api.getUser(auth.getAccessToken(), user.getSlug());    
-//        if (user == null) return;
-//        System.out.println(user.toString());
-        
- //       api.addFolder("somefolder", Boolean.TRUE);
-//        FileOutputStream fs = new FileOutputStream("my.txt");
-//        fs.write("test test test".getBytes());
-//        fs.close();
-//        FileInputStream inFile = new FileInputStream("my.txt");
-        
-//        Collection<MinusFolder> folders = 
-//                          api.getFolders(auth.getAccessToken(), user.getSlug());
-//        for(MinusFolder f: folders){
-//            
-//            System.out.print("Folder: ");
-//            System.out.println(f.toString());
-//            api.uploadFile(auth.getAccessToken(), "", "", f.getId(), inFile);
-////            api.deleteFolder(auth.getAccessToken(), f.getId());
-//            break;
-//            Collection<MinusFile> files = 
-//                                 api.getFiles(auth.getAccessToken(), f.getId());
+    //        System.out.print("Folder: ");
+    //        System.out.println(api.getFolder(folder.getId()).toString());
+      //      api.deleteFolder(folder.getId());
+          //     api.addFolder("bum\\subfolder", Boolean.TRUE);
+            
+            api.uploadFile("caption", "test1asfsaf2.rar", in, folder);
+            break;
+//            Collection<MinusFile> files = api.getFiles(folder.getId());
 //            for(MinusFile file: files){
 //                System.out.print("File: ");
 //                System.out.println(file.toString());
-//                api.deleteFile(auth.getAccessToken(), file.getId());
+//         
+//                api.deleteFile(file.getId());
+//                try {
+//                    FileOutputStream fw = 
+//                                 new FileOutputStream(new File(file.getName()));
+//         //           api.downloadFile(file, fw);
+//                } catch (FileNotFoundException ex) {
+//                    Logger.getLogger(MinusSync.class.getName()).log(Level.SEVERE, null, ex);
+//                }
 //            }
-//        }
+        }
         
- //       api.addFolder(auth.getAccessToken(), user.getSlug(), 
-   //                   "testfolder", Boolean.TRUE);
+        
     }
 }

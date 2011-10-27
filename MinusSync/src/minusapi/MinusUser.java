@@ -43,6 +43,11 @@ public class MinusUser {
     private String followers;
     private String following;
     
+    /**
+     * 
+     * @return string does't contain followers_slug_list and following_slug_list
+     */
+    
     @Override
     public String toString()
     {
@@ -62,10 +67,6 @@ public class MinusUser {
                "Folders link: " + folders + "; " + 
                "Url: " + url + "; " + 
                "Avatar: " + avatar + ";" +
-        
-                // TODO add correct toString for arrays
-        //       "Followers slug list: " + followers_slug_list.toString() + "; " +
-        //       "Following slug list: " + following_slug_list.toString() + "; " +
                "Followers: " + followers + "; " +
                "Following: " + following + ".";        
     }

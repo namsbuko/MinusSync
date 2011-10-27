@@ -245,7 +245,7 @@ public class MinusFile {
     }
 
     /**
-     * @param url_thumbnail_medium the url_thumbnail_medium to set
+     * @param urlThumbnailMedium the url_thumbnail_medium to set
      */
     public void setUrlThumbnailMedium(String urlThumbnailMedium) {
         this.url_thumbnail_medium = urlThumbnailMedium;
@@ -259,7 +259,7 @@ public class MinusFile {
     }
 
     /**
-     * @param uploaded_ago the uploaded_ago to set
+     * @param uploadedAgo the uploaded_ago to set
      */
     public void setUploadedAgo(int uploadedAgo) {
         this.uploaded_ago = uploadedAgo;

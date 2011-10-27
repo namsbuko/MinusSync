@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Map;
 import com.google.gson.*;
 import java.net.MalformedURLException;
+import java.net.URLConnection;
 import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -56,12 +57,16 @@ class FileList extends MinusList<MinusFile>{
 
 public class MinusApi {
   
+    static private final String CRLF = "\r\n";
+    static private final String Charset = "UTF-8"; 
+  
     private final String _clientId;
     private final String _clientKey;
     private final MinusUser _activeUser;
     private MinusAuth _auth;
 
-    static private final Map<Url, String> _urls = new HashMap<MinusApi.Url, String>(){{
+    static private final Map<Url, String> _urls = 
+         new HashMap<MinusApi.Url, String>(){{
             put(Url.ActiveUser, 
                 "https://minus.com/api/v2/activeuser?bearer_token=");
             put(Url.Authentification, "http://minus.com/oauth/token");
@@ -100,56 +105,71 @@ public class MinusApi {
         wr.close();
     }
                 
-    static private <T> T request(String method, Map<String, String> property, 
-                                 String url, String body, Class<T> type) {        
-        T res = null;
-        try {
-            HttpURLConnection con = 
-                            (HttpURLConnection)new URL(url).openConnection();
+    static private HttpURLConnection request(String method, 
+                          Map<String, String> property, String url, String body) 
+            throws IOException {
+        HttpURLConnection con = null;
+        con = (HttpURLConnection)new URL(url).openConnection();
         
-            con.setRequestMethod(method);
-            
-            if (property != null)
-                for (Entry<String, String> pair: property.entrySet()) {
-                    con.setRequestProperty(pair.getKey(), pair.getValue());
-                }
-           
-            if (body != null) {
-                con.setDoOutput(true);
-                writeBody(con.getOutputStream(), body);
+        con.setRequestMethod(method);
+
+        if (property != null)
+            for (Entry<String, String> pair: property.entrySet()) {
+                con.setRequestProperty(pair.getKey(), pair.getValue());
             }
 
-            InputStreamReader rd = new InputStreamReader(con.getInputStream());
-            res = new Gson().fromJson(rd, type);
-
-            con.disconnect();
+        if (body != null) {
+            con.setDoOutput(true);
+            writeBody(con.getOutputStream(), body);
+        }
+        
+        return con;     
+    }
+    
+    static private int requestResponseCode(String method, 
+                      Map<String, String> properties, String url, String body) {    
+        int res = -1;
+        HttpURLConnection con = null;
+        try {
+            con = request(method, properties, url, body);
+            con.connect();
+            res = con.getResponseCode();
+        } catch (IOException ex) {
+            Logger.getLogger(MinusApi.class.getName())
+                      .log(Level.WARNING, "requestResponseCode", ex);
+        } finally {
+            if (con != null) con.disconnect();
+        }
+        
+        return res;
+    }
+    
+    static private <T> T requestJson(String method, Map<String, 
+                    String> properties, String url, String body, Class<T> type) {        
+        T res = null;
+        HttpURLConnection con = null;
+        try {
+            con = request(method, properties, url, body);
+            if (con != null) {
+                InputStreamReader rd = 
+                                    new InputStreamReader(con.getInputStream());
+                res = new Gson().fromJson(rd, type);
+            }
         } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
+            Logger.getLogger(MinusApi.class.getName())
+                     .log(Level.WARNING, "requestJson", e);
+        } finally {
+            if (con != null) con.disconnect();
         }
         return res;        
     }
-            
+      
     static private MinusAuth authentification(String body) {
         Map<String, String> pr = new HashMap<String, String>();
         pr.put("Content-Type", 
-               "application/x-www-form-urlencoded; charset=UTF-8");
-        return request("POST", pr, _urls.get(Url.Authentification), 
-                       body, MinusAuth.class);
-    }
-     
-    static public MinusAuth authentification
-                               (String clientId, String clientKey, String uname, 
-                                String password, String scope){
-        return authentification(
-                   getAuthRequest(clientId, clientKey, uname, password, scope));
-    }
- 
-    public MinusAuth getAuthentification() {
-        return _auth;
+               "application/x-www-form-urlencoded; charset=" + Charset);
+        return requestJson("POST", pr, _urls.get(Url.Authentification), 
+                           body, MinusAuth.class);
     }
     
     private MinusApi(String clientId, String clientKey, MinusAuth auth, 
@@ -159,7 +179,45 @@ public class MinusApi {
         _auth = auth;
         _activeUser = activeUser;
     }
+
     
+    // public members
+     
+    /**
+     * @param clientId - developer's id is provided by minus
+     * @param clientKey - developers's key is provided by minus
+     * @param uname - user name for minus
+     * @param password - user password for minus
+     * @param scope - scope for session
+     * 
+     * @return class with authentification's info
+     * 
+     * @see MinusAuth
+     */
+    static public MinusAuth authentification
+                               (String clientId, String clientKey, String uname, 
+                                String password, String scope){
+        return authentification(
+                   getAuthRequest(clientId, clientKey, uname, password, scope));
+    }
+ 
+    /**
+     * 
+     * @return class with authentification's info
+     */
+    public MinusAuth getAuthentification() {
+        return _auth;
+    }
+    
+    /**
+     * Allocate MinusApi's Object
+     * @param clientId - developer's id is provided by minus
+     * @param clientKey - developers's key is provided by minus
+     * @param uname - user name for minus
+     * @param password - user password for minus
+     * @param scope - scope for session
+     * @return MinusApi's object
+     */
     static public MinusApi createMinusApi(String clientId, String clientKey, 
                                   String uname, String password, String scope) {
         MinusAuth auth = authentification(clientId, clientKey, uname, 
@@ -169,12 +227,30 @@ public class MinusApi {
                 ? null : new MinusApi(clientId, clientKey, auth, actUser);
     }
     
+     /**
+     * Static member
+     * @param clientId - developer's id is provided by minus
+     * @param clientKey - developers's key is provided by minus
+     * @param scope - scope for session
+     * @param refreshToken - token for refreshing
+     * 
+     * @return class with authentification's info
+     * 
+     * @see MinusAuth
+     * @see authentification()
+     */
     static public MinusAuth refresh(String clientId, String clientKey, 
-                                       String scope, String refreshToken) {
+                                    String scope, String refreshToken) {
         return authentification(
                    getRefreshRequest(clientId, clientKey, refreshToken, scope));
     }
     
+    /**
+     * @return result of refreshing
+     * 
+     * @see MinusAuth
+     * @see authentification()
+     */
     public boolean refresh() {
         _auth = refresh(_clientId, _clientKey, _auth.getScope(), 
                         _auth.getRefreshToken());
@@ -182,188 +258,249 @@ public class MinusApi {
         return _auth != null;
     }
     
-    static public MinusUser getActiveUser(String accToken)
-    {
+    /**
+     * 
+     * @param accToken access token
+     * @return active user
+     */
+    static public MinusUser getActiveUser(String accToken) {
         String url = _urls.get(Url.ActiveUser) + accToken;
-        return request("GET", null, url, null, MinusUser.class);
+        return requestJson("GET", null, url, null, MinusUser.class);
     }
     
+    /**
+     * 
+     * @return active user
+     */
     public MinusUser getActiveUser() {
         return _activeUser;
     }
     
+    /**
+     * Static member
+     * @param accToken access token
+     * @param slug users's slug
+     * @return user
+     */
     static public MinusUser getUser(String accToken, String slug) {
         String url = _urls.get(Url.User) + slug + "?bearer_token=" + accToken;
-        return request("GET", null, url, null, MinusUser.class);
+        return requestJson("GET", null, url, null, MinusUser.class);
     }
     
+    /**
+     * 
+     * @return user for current authentification 
+     */
     public MinusUser getUser() {
         return getUser(_auth.getAccessToken(), _activeUser.getSlug());
     }    
     
+    // TASK add modify info meybe
+    
+    /**
+     * Static member
+     * @param accToken access token
+     * @param slug users's slug
+     * @return collection of user's folder
+     */
     static public Collection<MinusFolder> getFolders(String accToken, 
                                                      String slug) {
         String url = _urls.get(Url.User) + slug 
                      + "/folders?bearer_token=" + accToken;
-        FolderList lst = request("GET", null, url, null, FolderList.class);
+        FolderList lst = requestJson("GET", null, url, null, FolderList.class);
         return lst == null ? null : lst.getResults();
     }
     
+    /**
+     * @return collection of user's folder
+     */
     public Collection<MinusFolder> getFolders() {
         return getFolders(_auth.getAccessToken(), _activeUser.getSlug());
     }
     
-    static public boolean addFolder(String accToken, String slug, String name, 
-                                    Boolean isPublic) {
-        // TODO don't work
-        boolean res = false;
-        try {
-            URL url = new URL(_urls.get(Url.User) + slug 
-                              + "/folders?bearer_token=" + accToken);
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setDoOutput(true);
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", 
-                            "application/x-www-form-urlencoded; charset=UTF-8");
-            con.setRequestProperty("Accept-Charse", "UTF-8,*;q=0.5");
-
-            String body = "name=" + name + "&is_public=true";// + isPublic.toString();
-            
-            writeBody(con.getOutputStream(), body);
-            
-            InputStreamReader rd = new InputStreamReader(con.getInputStream());
-  //          res = new Gson().fromJson(rd, type);
-            CharBuffer buf = CharBuffer.allocate(con.getContentLength());
-            rd.read(buf);
-            System.out.println(buf.array());
-            MinusFolder folder = new Gson().fromJson(new String(buf.array()), 
-                                                     MinusFolder.class);
-            
-            con.disconnect();
-        } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        }
-        return res;
+    /**
+     * Static member
+     * @param accToken access token
+     * @param slug users's slug
+     * @param name folder's name
+     * @param isPublic public folder's property
+     * @return MinusFolder object - folder has been added, null - else
+     */
+    static public MinusFolder addFolder(String accToken, String slug, 
+                                        String name, Boolean isPublic) {
+        String url = _urls.get(Url.User) + slug 
+                     + "/folders?bearer_token=" + accToken;
+        String body = "name=" + name + "&is_public=" + isPublic.toString();
+        Map<String, String> pr = new HashMap<String, String>();
+        pr.put("Content-Type", 
+               "application/x-www-form-urlencoded; charset=" + Charset);
+        pr.put("Accept-Charse", Charset + ",*;q=0.5");
+       
+        return requestJson("POST", pr, url, body, MinusFolder.class);
     }
     
-    public boolean  addFolder(String name, Boolean isPublic) {
+    /**
+     * @param name folder's name
+     * @param isPublic public folder's property
+     * @return MinusFolder object - folder has been added, null - else
+     */
+    public MinusFolder addFolder(String name, Boolean isPublic) {
         return addFolder(_auth.getAccessToken(), _activeUser.getSlug(), 
                          name, isPublic);
     }
     
+    /**
+     * Static member
+     * @param accToken access token
+     * @param folderId folder's id provided by minus
+     * @return MinusFolder - correct, null - else
+     */
     static public MinusFolder getFolder(String accToken, String folderId) {
         String url = _urls.get(Url.Folder) + folderId 
                      + "?bearer_token=" + accToken;
-        return request("GET", null, url, null, MinusFolder.class);
+        return requestJson("GET", null, url, null, MinusFolder.class);
     }
     
+    /**
+     * @param folderId folder's id provided by minus
+     * @return MinusFolder - correct, null - else
+     */
     public MinusFolder getFolder(String folderId) {
         return getFolder(_auth.getAccessToken(), folderId);
     }
     
-    static public boolean deleteFolder(String accToken, String folderId)
-    {
-        // TODO don't work
-        boolean res = false;
-        try {
-            URL url = new URL(_urls.get(Url.Folder) + folderId 
-                              + "?bearer_token=" + accToken);
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setRequestMethod("DELETE");
-            con.connect();
-       //     res = con.getResponseCode() == 200;
-       //   возвращает код -1
-            con.disconnect();
-        } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        }
-        return res;
+    /**
+     * Static member
+     * @param accToken access token
+     * @param folderId folder's id provided by minus
+     * @return always true
+     */
+    static public boolean deleteFolder(String accToken, String folderId) {
+        String url = _urls.get(Url.Folder) + folderId  
+                     + "?bearer_token=" + accToken;
+        int respCode = requestResponseCode("DELETE", null, url, null);
+     //   return HttpURLConnection.HTTP_OK == respCode;
+     // because api don't return code
+        return true;  
     }
     
+    /**
+     * @param folderId folder's id provided by minus
+     * @return always true
+     */
     public boolean deleteFolder(String folderId) {
         return deleteFolder(_auth.getAccessToken(), folderId);
     }
     
+    /**
+     * Static member
+     * @param accToken access token
+     * @param folderId folder's id provided by minus
+     * @return folder's files
+     */
     static public Collection<MinusFile> getFiles(String accToken, 
                                                  String folderId) {
         String url = _urls.get(Url.Folder) + folderId 
                      + "/files?bearer_token=" + accToken;
-        FileList lst = request("GET", null, url, null, FileList.class);
+        FileList lst = requestJson("GET", null, url, null, FileList.class);
         return lst == null ? null : lst.getResults();
     }
     
+    /**
+     * @param folderId folder's id provided by minus
+     * @return folder's files
+     */
     public Collection<MinusFile> getFiles(String folderId) {
         return getFiles(_auth.getAccessToken(), folderId);
     }
     
-    static public boolean uploadFile(String accToken, String caption, String filename, 
-                                     InputStream in)
-    {
-        // TODO don't work
-        
-        boolean res = false;
+    /**
+     * Static member
+     * @param accToken access token
+     * @param caption caption of file
+     * @param filename filename of file
+     * @param in stream with uploading data
+     * @param folder folder for uploading
+     * @return MinusFile - uploading success, null - else
+     */
+    static public MinusFile uploadFile(String accToken, String caption, 
+                          String filename, InputStream in, MinusFolder folder) {
+        MinusFile res = null;
+        PrintWriter writer = null;
+        HttpURLConnection con = null;
         try {
-            URL url = new URL(_urls.get(Url.Folder)// + fileId 
+            String boundary = Long.toHexString(System.currentTimeMillis());
+            String type = URLConnection.guessContentTypeFromStream(in);
+
+            URL url = new URL(_urls.get(Url.Folder) + folder.getId() 
                               + "/files?bearer_token=" + accToken);
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+   
+            con = (HttpURLConnection)url.openConnection();
             con.setDoOutput(true);
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", 
-                                   "multipart/form-data; boundary=---example");
-            con.setRequestProperty("Accept-Charse", "UTF-8,*;q=0.5");
+                                   "multipart/form-data; boundary=" + boundary);
+            con.setRequestProperty("Accept-Charse", Charset + ",*; q=0.5");
 
-            String body = "---example\r\n" +
-                          "Content-Disposition: form-data; name=\"file\"; "
-                          + "filename=\"my.txt\"\r\nContent-Type: text/plain\r\n\r\n";
+            OutputStream output = con.getOutputStream();
+            // true = autoFlush, important!
+            writer = 
+                 new PrintWriter(new OutputStreamWriter(output, Charset), true); 
             
-            OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
-            wr.write(body);
-            int c;
-            while ((c = in.read()) != -1) {
-                wr.write(c);
+            String contDisp = "Content-Disposition: form-data; ";
+            writer.append("--" + boundary).append(CRLF);
+            writer.append(contDisp + "name=\"file\"; filename=\"" 
+                          + filename + "\"")
+                  .append(CRLF);
+              
+            writer.append("Content-Type: " + type + "; charset=" + Charset)
+                  .append(CRLF);
+          //  writer.append("Content-Transfer-Encoding: binary").append(CRLF);
+            writer.append(CRLF).flush();
+            byte[] buffer = new byte[1024];
+            for (int length = 0; (length = in.read(buffer)) > 0;) {
+                output.write(buffer, 0, length);
             }
-            wr.write("\r\n");
-            
-            body = "---example\r\n" +
-                   "Content-Disposition: form-data; name=\"filename\"\r\n\r\n" +
-                   "\"my.txt\"\r\n" +
-                   "---example\r\n" + 
-                   "Content-Disposition: form-data; name=\"caption\"\r\n\r\n" +
-                   "\"mycaption\"\r\n" +
-                   "---example";
-            
-//            wr.flush();       
-            wr.close();
+            output.flush(); // Important! Output cannot be closed. Close of writer will close output as well.
+            writer.append(CRLF).flush();
+
+            writer.append("--" + boundary).append(CRLF);
+            writer.append(contDisp + "name=\"filename\"")
+                  .append(CRLF);
+            writer.append(CRLF);
+            writer.append(filename).append(CRLF).flush();
+
+            writer.append("--" + boundary).append(CRLF);
+            writer.append(contDisp + "name=\"caption\"")
+                  .append(CRLF);
+            writer.append(CRLF);
+            writer.append(caption).append(CRLF).flush();
+            writer.append("--" + boundary + "--").append(CRLF).flush();
+            writer.close();
             
             InputStreamReader rd = new InputStreamReader(con.getInputStream());
-  //          res = new Gson().fromJson(rd, type);
-            CharBuffer buf = CharBuffer.allocate(con.getContentLength());
-            rd.read(buf);
-            System.out.println(buf.array());
-            MinusFolder folder = new Gson().fromJson(new String(buf.array()), 
-                                                     MinusFolder.class);
+            res = new Gson().fromJson(rd, MinusFile.class);         
             
-            con.disconnect();
         } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
+            Logger.getLogger(MinusApi.class.getName())
+                        .log(Level.WARNING, "uploadFile", e);
+        } finally {
+            if (writer != null) writer.close();
+            if (con != null) con.disconnect();
         }
         return res;
     }
     
-    public boolean uploadFile(String caption, String filename, InputStream in) {
-        return uploadFile(_auth.getAccessToken(), caption, filename, in);
+    /**
+     * @param caption caption of file
+     * @param filename filename of file
+     * @param in stream with uploading data
+     * @param folder folder for uploading
+     * @return MinusFile - uploading success, null - else
+     */
+    public MinusFile uploadFile(String caption, String name, InputStream in, 
+                                MinusFolder folder) {
+        return uploadFile(_auth.getAccessToken(), caption, name, in, folder);
     }
     
     /*
@@ -402,37 +539,44 @@ public class MinusApi {
         return true;
     }    
         
+    /**
+     * Static member
+     * @param accToken access token
+     * @param fileId file's id by minus
+     * @return MinusFile - correct, null - else
+     */
     static public MinusFile getFile(String accToken, String fileId) {
         String url = _urls.get(Url.File) + fileId + "?bearer_token=" + accToken;
-        return request("GET", null, url, null, MinusFile.class);
+        return requestJson("GET", null, url, null, MinusFile.class);
     }
     
+    /**
+     * Static member
+     * @param fileId file's id by minus
+     * @return MinusFile - correct, null - else
+     */
     public MinusFile getFile(String fileId) {
         return getFile(_auth.getAccessToken(), fileId);
     }
     
-    static public boolean deleteFile(String accToken, String fileId)
-    {
-        boolean res = false;
-        try {
-            URL url = new URL(_urls.get(Url.File) + fileId 
-                              + "?bearer_token=" + accToken);
-            HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setRequestMethod("DELETE");
-            con.connect();
-       //     res = con.getResponseCode() == 200;
-       //   возвращает код -1
-            con.disconnect();
-        } catch (IOException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        } catch (JsonSyntaxException e) {
-            // TODO add report error            
-            e.printStackTrace();
-        }
-        return res;
+    /**
+     * Static member
+     * @param accToken access token
+     * @param fileId file's id by minus
+     * @return always true
+     */
+    static public boolean deleteFile(String accToken, String fileId) {
+        String url = _urls.get(Url.File) + fileId + "?bearer_token=" + accToken;
+        int respCode = requestResponseCode("DELETE", null, url, null);
+     //   return HttpURLConnection.HTTP_OK == respCode;
+     // because api don't return code
+        return true; 
     }
     
+    /**
+     * @param fileId file's id by minus
+     * @return always true
+     */
     public boolean deleteFile(String fileId) {
         return deleteFile(_auth.getAccessToken(), fileId);
     }
