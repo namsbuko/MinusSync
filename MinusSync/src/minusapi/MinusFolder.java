@@ -4,9 +4,6 @@
  */
 package minusapi;
 
-import java.util.Collection;
-import java.util.Date;
-
 /**
  *
  * @author burun
@@ -33,7 +30,7 @@ public class MinusFolder {
     
     private String url;
     
-    @Override
+     
     public String toString()
     {
         return "Id: " + id + "; " +
@@ -54,6 +51,7 @@ public class MinusFolder {
     /**
      * @return the id
      */
+     
     public String getId() {
         return id;
     }
@@ -61,6 +59,7 @@ public class MinusFolder {
     /**
      * @param id the id to set
      */
+     
     public void setId(String id) {
         this.id = id;
     }
@@ -68,6 +67,7 @@ public class MinusFolder {
     /**
      * @return the thumbnailUrl
      */
+     
     public String getThumbnailUrl() {
         return thumbnail_url;
     }
@@ -75,6 +75,7 @@ public class MinusFolder {
     /**
      * @param thumbnailUrl the thumbnailUrl to set
      */
+     
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnail_url = thumbnailUrl;
     }
@@ -82,6 +83,7 @@ public class MinusFolder {
     /**
      * @return the name
      */
+     
     public String getName() {
         return name;
     }
@@ -89,6 +91,7 @@ public class MinusFolder {
     /**
      * @param name the name to set
      */
+     
     public void setName(String name) {
         this.name = name;
     }
@@ -96,6 +99,7 @@ public class MinusFolder {
     /**
      * @return the isPublic
      */
+     
     public boolean isIsPublic() {
         return is_public;
     }
@@ -103,6 +107,7 @@ public class MinusFolder {
     /**
      * @param isPublic the isPublic to set
      */
+     
     public void setIsPublic(boolean isPublic) {
         this.is_public = isPublic;
     }
@@ -110,6 +115,7 @@ public class MinusFolder {
     /**
      * @return the countView
      */
+     
     public int getCountView() {
         return view_count;
     }
@@ -117,6 +123,7 @@ public class MinusFolder {
     /**
      * @param countView the countView to set
      */
+     
     public void setCountView(int countView) {
         this.view_count = countView;
     }
@@ -124,6 +131,7 @@ public class MinusFolder {
     /**
      * @return the creatorLink
      */
+     
     public String getCreatorLink() {
         return creator;
     }
@@ -131,6 +139,7 @@ public class MinusFolder {
     /**
      * @param creatorLink the creatorLink to set
      */
+     
     public void setCreatorLink(String creatorLink) {
         this.creator = creatorLink;
     }
@@ -138,6 +147,7 @@ public class MinusFolder {
     /**
      * @return the countFiles
      */
+     
     public int getCountFiles() {
         return file_count;
     }
@@ -145,6 +155,7 @@ public class MinusFolder {
     /**
      * @param countFiles the countFiles to set
      */
+     
     public void setCountFiles(int countFiles) {
         this.file_count = countFiles;
     }
@@ -152,6 +163,7 @@ public class MinusFolder {
     /**
      * @return the filesLink
      */
+     
     public String getFilesLink() {
         return files;
     }
@@ -159,6 +171,7 @@ public class MinusFolder {
     /**
      * @param filesLink the filesLink to set
      */
+     
     public void setFilesLink(String filesLink) {
         this.files = filesLink;
     }
@@ -166,6 +179,7 @@ public class MinusFolder {
     /**
      * @return the lastUploaded
      */
+     
     public String getLastUploaded() {
         return date_last_updated;
     }
@@ -173,6 +187,7 @@ public class MinusFolder {
     /**
      * @param lastUploaded the lastUploaded to set
      */
+     
     public void setLastUploaded(String lastUploaded) {
         this.date_last_updated = lastUploaded;
     }
@@ -180,6 +195,7 @@ public class MinusFolder {
     /**
      * @return the url
      */
+     
     public String getUrl() {
         return url;
     }
@@ -187,6 +203,7 @@ public class MinusFolder {
     /**
      * @param url the url to set
      */
+     
     public void setUrl(String url) {
         this.url = url;
     }
@@ -194,6 +211,7 @@ public class MinusFolder {
     /**
      * @return the last_updated
      */
+     
     public String getLastUpdated() {
         return last_updated;
     }
@@ -201,6 +219,7 @@ public class MinusFolder {
     /**
      * @param lastUpdated the last_updated to set
      */
+     
     public void setLastUpdated(String lastUpdated) {
         this.last_updated = lastUpdated;
     }
@@ -208,6 +227,7 @@ public class MinusFolder {
     /**
      * @return the last_updated_ago
      */
+     
     public int getLastUpdatedAgo() {
         return last_updated_ago;
     }
@@ -215,6 +235,7 @@ public class MinusFolder {
     /**
      * @param lastUpdatedAgo the last_updated_ago to set
      */
+     
     public void setLastUpdatedAgo(int lastUpdatedAgo) {
         this.last_updated_ago = lastUpdatedAgo;
     }
@@ -222,6 +243,7 @@ public class MinusFolder {
     /**
      * @return the item_ordering
      */
+     
     public String[] getItemOrdering() {
         return item_ordering;
     }
@@ -229,6 +251,7 @@ public class MinusFolder {
     /**
      * @param itemOrdering the item_ordering to set
      */
+     
     public void setItemOrdering(String[] itemOrdering) {
         this.item_ordering = itemOrdering;
     }

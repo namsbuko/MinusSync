@@ -1,15 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package minusapi;
 
-import java.util.Date;
-
-/**
- *
- * @author burun
- */
 public class MinusFile {
     private String id;
     
@@ -36,7 +27,7 @@ public class MinusFile {
     
     private int uploaded_ago;
     
-    @Override
+     
     public String toString()
     {
         return "Id: " + id + "; " +
@@ -58,6 +49,7 @@ public class MinusFile {
     /**
      * @return the id
      */
+     
     public String getId() {
         return id;
     }
@@ -65,6 +57,7 @@ public class MinusFile {
     /**
      * @param id the id to set
      */
+     
     public void setId(String id) {
         this.id = id;
     }
@@ -72,6 +65,7 @@ public class MinusFile {
     /**
      * @return the name
      */
+     
     public String getName() {
         return name;
     }
@@ -79,6 +73,7 @@ public class MinusFile {
     /**
      * @param name the name to set
      */
+     
     public void setName(String name) {
         this.name = name;
     }
@@ -86,6 +81,7 @@ public class MinusFile {
     /**
      * @return the title
      */
+     
     public String getTitle() {
         return title;
     }
@@ -93,6 +89,7 @@ public class MinusFile {
     /**
      * @param title the title to set
      */
+     
     public void setTitle(String title) {
         this.title = title;
     }
@@ -100,6 +97,7 @@ public class MinusFile {
     /**
      * @return the caption
      */
+     
     public String getCaption() {
         return caption;
     }
@@ -107,6 +105,7 @@ public class MinusFile {
     /**
      * @param caption the caption to set
      */
+     
     public void setCaption(String caption) {
         this.caption = caption;
     }
@@ -121,6 +120,7 @@ public class MinusFile {
     /**
      * @param width the width to set
      */
+     
     public void setWidth(int width) {
         this.width = width;
     }
@@ -135,6 +135,7 @@ public class MinusFile {
     /**
      * @param height the height to set
      */
+     
     public void setHeight(int height) {
         this.height = height;
     }
@@ -142,6 +143,7 @@ public class MinusFile {
     /**
      * @return the size
      */
+     
     public int getSize() {
         return filesize;
     }
@@ -149,6 +151,7 @@ public class MinusFile {
     /**
      * @param size the size to set
      */
+     
     public void setSize(int size) {
         this.filesize = size;
     }
@@ -156,6 +159,7 @@ public class MinusFile {
     /**
      * @return the mimeType
      */
+     
     public String getMimeType() {
         return mimetype;
     }
@@ -163,6 +167,7 @@ public class MinusFile {
     /**
      * @param mimeType the mimeType to set
      */
+     
     public void setMimeType(String mimeType) {
         this.mimetype = mimeType;
     }
@@ -170,6 +175,7 @@ public class MinusFile {
     /**
      * @return the folderLink
      */
+     
     public String getFolderLink() {
         return folder;
     }
@@ -177,6 +183,7 @@ public class MinusFile {
     /**
      * @param folderLink the folderLink to set
      */
+     
     public void setFolderLink(String folderLink) {
         this.folder = folderLink;
     }
@@ -184,6 +191,7 @@ public class MinusFile {
     /**
      * @return the url
      */
+     
     public String getUrl() {
         return url;
     }
@@ -191,6 +199,7 @@ public class MinusFile {
     /**
      * @param url the url to set
      */
+     
     public void setUrl(String url) {
         this.url = url;
     }
@@ -198,6 +207,7 @@ public class MinusFile {
     /**
      * @return the uploaded
      */
+     
     public String getUploaded() {
         return uploaded;
     }
@@ -205,6 +215,7 @@ public class MinusFile {
     /**
      * @param uploaded the uploaded to set
      */
+     
     public void setUploaded(String uploaded) {
         this.uploaded = uploaded;
     }
@@ -212,6 +223,7 @@ public class MinusFile {
     /**
      * @return the originalLink
      */
+     
     public String getOriginalLink() {
         return url_rawfile;
     }
@@ -219,6 +231,7 @@ public class MinusFile {
     /**
      * @param originalLink the originalLink to set
      */
+     
     public void setOriginalLink(String originalLink) {
         this.url_rawfile = originalLink;
     }
@@ -226,6 +239,7 @@ public class MinusFile {
     /**
      * @return the link
      */
+     
     public String getTumbnailLink() {
         return url_thumbnail;
     }
@@ -233,6 +247,7 @@ public class MinusFile {
     /**
      * @param link the link to set
      */
+     
     public void setTumbnailLink(String link) {
         this.url_thumbnail = link;
     }
@@ -247,6 +262,7 @@ public class MinusFile {
     /**
      * @param urlThumbnailMedium the url_thumbnail_medium to set
      */
+     
     public void setUrlThumbnailMedium(String urlThumbnailMedium) {
         this.url_thumbnail_medium = urlThumbnailMedium;
     }
@@ -254,6 +270,7 @@ public class MinusFile {
     /**
      * @return the uploaded_ago
      */
+     
     public int getUploadedAgo() {
         return uploaded_ago;
     }
@@ -261,6 +278,7 @@ public class MinusFile {
     /**
      * @param uploadedAgo the uploaded_ago to set
      */
+     
     public void setUploadedAgo(int uploadedAgo) {
         this.uploaded_ago = uploadedAgo;
     }
