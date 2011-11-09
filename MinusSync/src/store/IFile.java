@@ -4,6 +4,8 @@
  */
 package store;
 
+import java.util.Date;
+
 /**
  *
  * @author burun
@@ -11,84 +13,42 @@ package store;
 public interface IFile {
 
     /**
-     * @return the folderLink
+     * @return parent of file
      */
-    IFolder getParentFolder();
-
+    IFolder getParent();
+    
     /**
-     * @return the id
+     * @return id
      */
     String getId();
-
+    
     /**
-     * @return the mimeType
-     */
-    String getType();
-
-    /**
-     * @return the name
+     * @return name
      */
     String getName();
 
     /**
-     * @return the originalLink
+     * @return path ralative to root
      */
     String getPath();
+    
+    /**
+     * @return date of creation
+     */
+    Date getCreationDate();
 
     /**
-     * @return the size
+     * @return time in millis since creation
+     */
+    long getCreationAgo();
+
+    /**
+     * @return mime type of file
+     */
+    String getType();
+
+    /**
+     * @return size of file
      */
     int getSize();
-
-    /**
-     * @return the uploaded
-     */
-    String getUploaded();
-
-    /**
-     * @return the uploaded_ago
-     */
-    int getUploadedAgo();
-
-    /**
-     * @return the folderLink
-     */
-    void setParentFolder(IFolder folder);
-
-    /**
-     * @param id the id to set
-     */
-    void setId(String id);
-
-    /**
-     * @param mimeType the mimeType to set
-     */
-    void setType(String mimeType);
-
-    /**
-     * @param name the name to set
-     */
-    void setName(String name);
-
-    /**
-     * @param originalLink the originalLink to set
-     */
-    void setPath(String originalLink);
-
-    /**
-     * @param size the size to set
-     */
-    void setSize(int size);
-
-    /**
-     * @param uploaded the uploaded to set
-     */
-    void setUploaded(String uploaded);
-
-    /**
-     * @param uploadedAgo the uploaded_ago to set
-     */
-    void setUploadedAgo(int uploadedAgo);
-
-    String toString();    
 }
