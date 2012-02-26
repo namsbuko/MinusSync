@@ -51,4 +51,9 @@ public interface IFile {
      * @return size of file
      */
     int getSize();
+
+    /**
+     * @return time of last modify file
+     */
+    Long getLastChange();
 }

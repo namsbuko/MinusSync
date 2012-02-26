@@ -56,5 +56,7 @@ public interface IStore {
      * @param input stream of file
      * @return true if file is added, otherwise false
      */
-    boolean addFile(IFile file, InputStream in);   
+    boolean addFile(IFile file, InputStream in);
+
+    void refresh ();
 }

@@ -18,12 +18,12 @@ public class Messager {
     
     static private final IMessager _default = new DefaultMessager();
     
-    static IMessager getMessager(String className) {
+    public static IMessager getMessager(String className) {
         IMessager m = _messagers.get(className);
         return m == null ? _default : m;
     }
     
-    static void setMessager(String className, IMessager messager) {
+    public static void setMessager(String className, IMessager messager) {
         _messagers.put(className, messager);
     }
 }

@@ -4,6 +4,7 @@
  */
 package store;
 
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -11,10 +12,15 @@ import java.util.Date;
  * @author burun
  */
 public interface IFolder {
-    
+
+    Collection<IFile> getFiles ();
+
+    Collection<IFolder> getFolders ();
+
     /**
      * @return parent of folder
      */
+
     IFolder getParent();
     
     /**
