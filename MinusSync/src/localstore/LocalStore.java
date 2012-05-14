@@ -158,6 +158,9 @@ public class LocalStore implements IStore{
     
     
     // public section 
+    public LocalStore(File root){
+        _root = root;
+    }
     
     @Override
     public boolean addFolder(IFolder folder) {
@@ -254,7 +257,7 @@ public class LocalStore implements IStore{
         try {
             String type = URLConnection
                          .guessContentTypeFromStream(new FileInputStream(file));
-            res = new LocalFile(file, getId(), parent, parent.getPath(), type);
+            res = new LocalFile(file, getId(), parent, (parent == null ? "" : parent.getPath()), type);
             if (!addFileInfo(res)) res = null;
         } catch (IOException ex) {
             Logger.getLogger(LocalStore.class.getName())
@@ -274,7 +277,7 @@ public class LocalStore implements IStore{
         IFolder res = null;
         
         res = new LocalFolder(folder, getId(), parent, 
-                              parent.getPath() + folder.getName() + DirDel);
+                              (parent == null ? "" : parent.getPath()) + folder.getName() + DirDel);
        
         return addFolderInfo(res) ? res : null;
     }
